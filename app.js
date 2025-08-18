@@ -7,7 +7,8 @@ const methodOverride = require('method-override'); // For PUT and DELETE methods
 const ejsMate = require('ejs-mate'); // EJS templating engine
 const wrapAsync = require('./utils/wrapAsync.js'); // Utility to wrap async functions for error handling
 const ExpressError = require('./utils/ExpressError.js'); // Custom error class for handling errors
-const { listingSchema } = require('./schema.js'); // Importing the Joi schema for validation
+const { listingSchema,reviewSchema } = require('./schema.js'); // Importing the Joi schema for validation
+const Review = require('./models/review.js'); // Importing the Review model
 //______________________________________________________________________________________________________________________
 
 
@@ -48,6 +49,17 @@ const validateListing = (req, res, next) => {
     }
 };
 
+const validateReview = (req, res, next) => {
+    let { error } = reviewSchema.validate(req.body);
+    if (error) {
+        let errMsg = error.details.map(el => el.message).join(', ');
+        throw new ExpressError(400, errMsg);
+    } else {
+        next();
+    }
+};
+//___________________________________________________________________
+
 // index route
 app.get("/listings",wrapAsync(async (req,res)=>{
     const allListings = await Listing.find({});
@@ -62,7 +74,7 @@ app.get("/listings/new", (req, res) => {
 
 //SHOW ROUTE 
 app.get("/listings/:id", wrapAsync(async (req, res) => {
-    const listing = await Listing.findById(req.params.id);
+    const listing = await Listing.findById(req.params.id).populate('reviews');
     res.render("listings/show.ejs", { listing });
 }));
 //___________________________________________________________________________________________
@@ -98,7 +110,31 @@ app.delete("/listings/:id", wrapAsync(async (req, res) => {
 }));
 
 //__________________________________________________
+// Review routes
+// Post route
+app.post("/listings/:id/reviews",validateReview, wrapAsync(async (req, res) => {
+    let listing = await Listing.findById(req.params.id);
+    let newReview = new Review(req.body.review);
+
+    listing.reviews.push(newReview);
+
+    await newReview.save();
+    await listing.save();
+    res.redirect(`/listings/${listing._id}`);
+}));
+
+//Delete Review route
+app.delete("/listings/:id/reviews/:reviewId", wrapAsync(async (req, res) => {
+    let { id, reviewId } = req.params;
+    await Listing.findByIdAndUpdate(id, { $pull: { reviews: reviewId } }); // Remove review from listing
+    await Review.findByIdAndDelete(reviewId);
+    res.redirect(`/listings/${id}`);
+}));
+
+//____________________________________________________________
 // ERROR HANDLING MIDDLEWARE
+// Order matters in Express!
+// You must define all your routes before the error handler
 
 app.all("*", (req, res, next) => {
     next(new ExpressError(404, "Page Not Found"));
@@ -110,9 +146,13 @@ app.use((err, req, res, next) => {
     // res.status(statusCode).send(message);
 });
 //____________________________________________________
+
+//___________________________________________________________________________
 app.listen(3000, () => {
     console.log('Server is running on port 3000');
 });
 //___________________________________________________________________________________________
+
+
 
 
