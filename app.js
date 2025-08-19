@@ -5,6 +5,11 @@ const path = require('path');//require path for ejs
 const methodOverride = require('method-override'); // For PUT and DELETE methods
 const ejsMate = require('ejs-mate'); // EJS templating engine
 const ExpressError = require('./utils/ExpressError.js'); // Custom error class for handling errors
+const session = require('express-session'); // For session management
+const flash = require('connect-flash'); // For flash messages
+
+
+
 const listings = require('./routes/listing.js'); // Importing the listings routes
 const reviews = require('./routes/review.js'); // Importing the reviews routes
 //______________________________________________________________________________________________________________________
@@ -31,11 +36,37 @@ app.use(methodOverride('_method')); // Middleware for method override
 app.engine('ejs', ejsMate); // Use ejsMate for EJS templating
 app.use(express.static(path.join(__dirname, 'public'))); // Serve static files from the public directory
 //____________________________________________________________________________________________________________
+// SESSION CONFIGURATION
+const sessionOptions = {
+    secret: "mysupersecretcode",
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        expires: Date.now() + 24 * 60 * 60 * 1000 * 3,
+        maxAge: 24 * 60 * 60 * 1000 * 3, // 72 hours
+        httpOnly: true
+    },
+};
+
+//______________________________________________________
 app.get("/", (req, res) => {
     res.send("Welcome to Wanderlust!");
 
 });
 
+
+
+app.use(session(sessionOptions)); // Use session middleware
+app.use(flash()); // Use flash middleware
+
+
+
+
+app.use((req, res, next) => {
+    res.locals.success = req.flash('success');
+    res.locals.error = req.flash('error');
+    next();
+});
 
 //___________________________________________________________________
 app.use('/listings', listings); // Use the listings routes 
