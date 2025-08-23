@@ -129,6 +129,7 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 
 ---
 
+
 **Recent Updates:**
 - Modularized review routes (`routes/review.js`) with `mergeParams` for nested routing.
 - Flash messages for all CRUD actions (success/error).
@@ -136,3 +137,11 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 - Improved error handling and custom error page.
 - EJS layouts and partials for DRY, maintainable views.
 - Updated README.md to reflect all new features and structure.
+
+---
+
+**Recent Update 2:**
+- Added direct `/signup` route support for user registration (now accessible at both `/signup` and `/users/signup`).
+- Created `views/users/signup.ejs` for user signup page.
+- Improved user route modularity and clarity in `routes/user.js`.
+- README.md updated with new usage and routing details.
