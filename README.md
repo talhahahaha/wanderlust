@@ -140,8 +140,18 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 
 ---
 
+
 **Recent Update 2:**
 - Added direct `/signup` route support for user registration (now accessible at both `/signup` and `/users/signup`).
 - Created `views/users/signup.ejs` for user signup page.
 - Improved user route modularity and clarity in `routes/user.js`.
 - README.md updated with new usage and routing details.
+
+---
+
+**Recent Update 3:**
+- Fixed EJS syntax error in `navbar.ejs` (navigation bar) for correct conditional rendering of login/logout/signup links.
+- Added `currentUser` to all templates via middleware in `app.js` for user-aware navigation and features.
+- Changed user route mounting in `app.js` to `app.use('/', userRouter)` for more flexible user route access.
+- Improved error messaging and flash message support across all routes.
+- General code cleanup and improved comments for maintainability.

@@ -2,28 +2,18 @@ const express = require("express");
 const router = express.Router({ mergeParams: true });
 const ExpressError = require('../utils/ExpressError.js');
 const wrapAsync = require('../utils/wrapAsync.js'); 
-const { reviewSchema } = require('../schema.js'); // Importing the Joi schema for validation
 const Review = require('../models/review.js'); // Importing the Review model
 const Listing = require('../models/listing.js'); // Importing the Listing model
+const {validateReview, isLoggedIn, isReviewAuthor} = require('../middleware.js');
 
 
-//_______________________________________________________________________
-// Joi middleware for reviews
-const validateReview = (req, res, next) => {
-    let { error } = reviewSchema.validate(req.body);
-    if (error) {
-        let errMsg = error.details.map(el => el.message).join(', ');
-        throw new ExpressError(400, errMsg);
-    } else {
-        next();
-    }
-};
 //__________________________________________________
 // Review routes
 // Post route
-router.post("/",validateReview, wrapAsync(async (req, res) => {
+router.post("/", isLoggedIn, validateReview, wrapAsync(async (req, res) => {
     let listing = await Listing.findById(req.params.id);
     let newReview = new Review(req.body.review);
+    newReview.author = req.user._id; // Associate review with logged-in user
 
     listing.reviews.push(newReview);
 
@@ -34,7 +24,7 @@ router.post("/",validateReview, wrapAsync(async (req, res) => {
 }));
 
 //Delete Review route
-router.delete("/:reviewId", wrapAsync(async (req, res) => {
+router.delete("/:reviewId", isReviewAuthor, isLoggedIn, wrapAsync(async (req, res) => {
     let { id, reviewId } = req.params;
     await Listing.findByIdAndUpdate(id, { $pull: { reviews: reviewId } }); // Remove review from listing
     await Review.findByIdAndDelete(reviewId);
