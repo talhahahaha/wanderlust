@@ -155,3 +155,11 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 - Changed user route mounting in `app.js` to `app.use('/', userRouter)` for more flexible user route access.
 - Improved error messaging and flash message support across all routes.
 - General code cleanup and improved comments for maintainability.
+
+
+#
+**Recent Update 4:**
+- Adopted the MVC (Model-View-Controller) architectural pattern for better code organization and scalability.
+- Models (`models/`), views (`views/`), and controllers/routes (`routes/`) are now clearly separated.
+- Improved maintainability and extensibility by following MVC best practices.
+- Updated documentation and code comments to reflect the new structure.
