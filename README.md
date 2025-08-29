@@ -164,3 +164,5 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 - Improved maintainability and extensibility by following MVC best practices.
 - Updated documentation and code comments to reflect the new structure.
 - Added support for image uploading: integrated Multer and Cloudinary, updated forms and model to handle image uploads for listings.
+
+- added current iamge in in edit form
