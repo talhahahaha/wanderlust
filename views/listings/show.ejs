@@ -1,4 +1,7 @@
 <% layout("layouts/boilerplate") %>
+<script>
+const MAPS_API_KEY = "<%= process.env.MAPS_API_KEY %>";
+</script>
 <div class="row mt-3 mb-5">
     <div class="col-8 offset-3">
 <h3><%= listing.title %></h3>
@@ -108,5 +111,8 @@
     <% } %>
     </div>
 
-    <div>
+    <div class="col-6 mb-3 offset-3">
+      <h3>Where you'll be</h3>
+      <div id="my-map"></div>
     </div>
+    <script src="/js/map.js" ></script>
