@@ -164,5 +164,31 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 - Improved maintainability and extensibility by following MVC best practices.
 - Updated documentation and code comments to reflect the new structure.
 - Added support for image uploading: integrated Multer and Cloudinary, updated forms and model to handle image uploads for listings.
+- Added current image in edit form.
 
-- added current iamge in in edit form
+### Map Integration with Geoapify & MapLibre
+- **Geocoding with Geoapify:**
+   - When a new listing is created, the address is geocoded using the Geoapify API.
+   - The resulting coordinates are stored in the `geometry` field of the listing in MongoDB.
+- **Map Display on Show Page:**
+   - Each listing's show page displays a map centered on the listing's coordinates.
+   - The map is rendered using MapLibre GL JS and styled with Geoapify tiles.
+   - A marker is placed at the listing's location (no popup by default).
+- **Environment Variables:**
+   - Add your Geoapify API key to `.env` as `GEOAPIFY_KEY` (just the key, not a URL).
+- **Frontend Integration:**
+   - The map is visible in the `#my-map` div on the show page.
+   - Coordinates and API key are injected from the backend to the frontend for secure use.
+   - Map container is styled in `public/css/style.css` for proper display.
+
+#### How It Works
+1. **On Listing Creation:**
+    - The server geocodes the address and saves the coordinates.
+2. **On Show Page:**
+    - The map is loaded with MapLibre and Geoapify, centered on the listing's coordinates.
+    - A marker is shown at the exact location.
+
+#### Troubleshooting
+- If the map is not visible, ensure your API key is correct and the map container has CSS height.
+- If the map shows the ocean, check that the listing's coordinates are not `[0,0]`.
+- For old listings, update their coordinates by re-saving or running a migration script.

@@ -1,4 +1,6 @@
+
 const Listing = require("../models/listing");
+const axios = require("axios");
 
 
 module.exports.index = async (req,res)=>{
@@ -13,30 +15,55 @@ module.exports.renderNewForm = (req, res) => {
 
 module.exports.showListing = async (req, res) => {
     const listing = await Listing.findById(req.params.id)
-    .populate({
-        path:'reviews',
-        populate: {
-            path: 'author',
-            model: 'User'
-        }
-    })
-    .populate('owner');
+        .populate({
+            path: 'reviews',
+            populate: {
+                path: 'author',
+                model: 'User'
+            }
+        })
+        .populate('owner');
     if (!listing) {
         req.flash('error', 'Listing you requested does not exist.');
         return res.redirect("/listings");
     }
-    console.log(listing);
-    res.render("listings/show.ejs", { listing });
+    // Pass coordinates and API key for map
+    const coordinates = listing.geometry && listing.geometry.coordinates ? listing.geometry.coordinates : [0, 0];
+    res.render("listings/show.ejs", {
+        listing,
+        coordinates,
+        mapsApiKey: process.env.GEOAPIFY_KEY
+    });
 };
 
 module.exports.createListing = async (req, res, next) => {
     let url = req.file.path;
     let filename = req.file.filename;
 
-
     const newListing = new Listing(req.body.listing);
     newListing.owner = req.user._id; // Set the owner to the logged-in user
-    newListing.image = {url, filename};
+    newListing.image = { url, filename };
+
+    // Geocode the location using Geoapify
+    try {
+        const geoRes = await axios.get('https://api.geoapify.com/v1/geocode/search', {
+            params: {
+                text: newListing.location,
+                apiKey: process.env.GEOAPIFY_KEY
+            }
+        });
+        const features = geoRes.data.features;
+        if (features && features.length > 0) {
+            newListing.geometry = {
+                type: 'Point',
+                coordinates: features[0].geometry.coordinates // [lng, lat]
+            };
+        }
+    } catch (err) {
+        console.error('Geocoding failed:', err.message);
+        newListing.geometry = { type: 'Point', coordinates: [0, 0] };
+    }
+
     await newListing.save();
     req.flash('success', 'Listing created successfully!'); // flash message
     res.redirect("/listings");

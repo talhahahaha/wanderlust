@@ -115,4 +115,10 @@ const MAPS_API_KEY = "<%= process.env.MAPS_API_KEY %>";
       <h3>Where you'll be</h3>
       <div id="my-map"></div>
     </div>
-    <script src="/js/map.js" ></script>
+<script>
+window.MAPS_API_KEY = "<%= mapsApiKey %>";
+window.LISTING_COORDS = JSON.parse('<%- JSON.stringify(coordinates) %>');
+</script>
+<link href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css" rel="stylesheet" />
+<script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js"></script>
+<script src="/js/map.js"></script>

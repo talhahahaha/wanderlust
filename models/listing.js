@@ -17,6 +17,17 @@ const listingSchema = new Schema({
   price: Number,
   location: String,
   country: String,
+  geometry: {
+    type: {
+      type: String,
+      enum: ['Point'],
+      default: 'Point'
+    },
+    coordinates: {
+      type: [Number],
+      default: [0, 0]
+    }
+  },
   reviews:[
     {
       type: Schema.Types.ObjectId,
@@ -28,7 +39,7 @@ const listingSchema = new Schema({
     ref: "User",
     
   }
-}); 
+});
 
 listingSchema.post('findOneAndDelete', async (listing) => {
   if (listing) {
