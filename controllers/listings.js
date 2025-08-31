@@ -83,7 +83,7 @@ module.exports.renderEditForm = async (req, res) => {
 
 module.exports.updateListing = async (req, res) => {
     let {id} = req.params;
-    let listing = await Listing.findByIdAndUpdate(id, {...req.body.listing}); // ... is used to spread the properties of the listing object
+    let listing = await Listing.findByIdAndUpdate(id, {...req.body.listing}, { new: true }); // ... is used to spread the properties of the listing object
 
     if(typeof req.file !== 'undefined'){
     let url = req.file.path;
@@ -91,6 +91,28 @@ module.exports.updateListing = async (req, res) => {
     listing.image = {url, filename};
     await listing.save();
     }
+ // geo code for update listing
+    if (req.body.listing.location) {
+    try {
+        const geoRes = await axios.get('https://api.geoapify.com/v1/geocode/search', {
+            params: {
+                text: req.body.listing.location,
+                apiKey: process.env.GEOAPIFY_KEY
+            }
+        });
+        const features = geoRes.data.features;
+        if (features && features.length > 0) {
+            listing.geometry = {
+                type: 'Point',
+                coordinates: features[0].geometry.coordinates // [lng, lat]
+            };
+        }
+    } catch (err) {
+        console.error('Geocoding failed:', err.message);
+        listing.geometry = { type: 'Point', coordinates: [0, 0] };
+    }
+    await listing.save();
+    };
 
     req.flash('success', 'Listing updated successfully!'); // flash message
     res.redirect(`/listings/${id}`);
