@@ -11,6 +11,7 @@ const methodOverride = require('method-override'); // For PUT and DELETE methods
 const ejsMate = require('ejs-mate'); // EJS templating engine
 const ExpressError = require('./utils/ExpressError.js'); // Custom error class for handling errors
 const session = require('express-session'); // For session management
+const MongoStore = require('connect-mongo'); // For storing sessions in MongoDB
 const flash = require('connect-flash'); // For flash messages
 const passport = require('passport'); // For authentication
 const LocalStrategy = require('passport-local'); // Local authentication strategy
@@ -22,7 +23,8 @@ const userRouter = require('./routes/user.js') // Importing the users routes
 //______________________________________________________________________________________________________________________
 
  
-const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
+// const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
+const dburl = process.env.ATLASDB_URL;
 //mongoose setting 
 Main()
 .then(() => {
@@ -33,7 +35,7 @@ Main()
 });
 
 async function Main() {
-    await mongoose.connect(MONGO_URL);
+    await mongoose.connect(dburl);
 }
 //________________________________________________________________________________________
 app.set("view engine", "ejs"); // Set EJS as the view engine
@@ -43,9 +45,24 @@ app.use(methodOverride('_method')); // Middleware for method override
 app.engine('ejs', ejsMate); // Use ejsMate for EJS templating
 app.use(express.static(path.join(__dirname, 'public'))); // Serve static files from the public directory
 //____________________________________________________________________________________________________________
+
+//  mongodb session store keep it ABOVE SESSION OPTIONS
+const store = MongoStore.create({
+    mongoUrl: dburl,
+    crypto: {
+        secret: process.env.SECRET,
+        touchAfter: 24 * 3600 // Time period in seconds
+    }
+});
+store.on("error", () =>{
+    console.log("Session store error");
+});
+
+
 // SESSION CONFIGURATION
 const sessionOptions = {
-    secret: "mysupersecretcode",
+    store,
+    secret: process.env.SECRET,
     resave: false,
     saveUninitialized: true,
     cookie: {
