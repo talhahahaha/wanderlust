@@ -6,7 +6,7 @@ if (document.getElementById('my-map') && window.maplibregl) {
     container: 'my-map',
     style: `https://maps.geoapify.com/v1/styles/osm-carto/style.json?apiKey=${myAPIKey}`,
     center: coords,
-    zoom: 15
+    zoom: 12
   });
 
   // Add marker without popup
