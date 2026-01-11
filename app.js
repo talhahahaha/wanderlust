@@ -23,6 +23,7 @@ const userRouter = require('./routes/user.js') // Importing the users routes
 //______________________________________________________________________________________________________________________
 
  
+// default to local MongoDB if ATLASDB_URL isn't provided
 // const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
 const dburl = process.env.ATLASDB_URL;
 //mongoose setting 
